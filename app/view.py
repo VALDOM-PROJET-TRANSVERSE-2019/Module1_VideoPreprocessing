@@ -1,11 +1,12 @@
 """
 Routes for Flask app
 """
+import hashlib
 import os
 
+import cv2
 from flask import Flask
 from flask_restplus import Api, Resource, reqparse
-import cv2
 
 APP = Flask(__name__)
 APP.config.from_object('config')
@@ -31,26 +32,27 @@ class Processor(Resource):
         parser.add_argument('Output_path', type=str,
                             required=True, help='Video path')
         parser.add_argument('Sampling', type=float,
-                            required=False, default=0.5, help='Sampling parameter')
+                            required=False, default=0.2, help='Sampling parameter')
         args = parser.parse_args()
-        videocap = cv2.VideoCapture("/home/pa/PycharmProjects/Module4_VehicleTracking/data/video/car.flv")
+        video_cap = cv2.VideoCapture("/home/pa/PycharmProjects/Module4_VehicleTracking/data/video/car.flv")
 
         sec, count = 0, 0
         frame_rate = args.Sampling  # it will capture image in each sampling second
-        videocap.set(cv2.CAP_PROP_POS_MSEC, sec * 1000)
-        has_frames, image = videocap.read()
+
+        video_cap.set(cv2.CAP_PROP_POS_MSEC, sec * 1000)
+        has_frames, image = video_cap.read()
         # Create the folder if it doesn't exist
-        os.makedirs(args.Output_path + "/Output/", exist_ok=True)
+        hashed = hashlib.blake2s(str(args).encode(), key=b'COMMUTE', digest_size=3).hexdigest()
+        os.makedirs(args.Output_path + "/" + str(hashed) + "/", exist_ok=True)
 
         while has_frames:
             count = count + 1
             sec = sec + frame_rate
             sec = round(sec, 2)
-            videocap.set(cv2.CAP_PROP_POS_MSEC, sec * 1000)
-            has_frames, image = videocap.read()
-            print(args.Output_path + "Output/" + "image" + str(count) + ".jpg")
+            video_cap.set(cv2.CAP_PROP_POS_MSEC, sec * 1000)
+            has_frames, image = video_cap.read()
             if has_frames:
-                cv2.imwrite(args.Output_path + "/Output/" + "image" + str(count) + ".jpg",
+                cv2.imwrite(args.Output_path + "/" + str(hashed) + "/" + "image" + str(count) + ".jpg",
                             image)  # save frame as JPG file
 
         # return the new frames collection id
