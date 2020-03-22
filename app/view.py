@@ -18,6 +18,7 @@ class Processor(Resource):
     """
     Resource class to generate Swagger for REST API
     """
+
     @PROCESSOR.doc(params={'Video_path': 'A path', 'Output_path': 'A path', 'Sampling': 'float'})
     def get(self):
         """
@@ -35,23 +36,22 @@ class Processor(Resource):
         videocap = cv2.VideoCapture("/home/pa/PycharmProjects/Module4_VehicleTracking/data/video/car.flv")
 
         sec, count = 0, 0
-        frameRate = args.Sampling  # it will capture image in each sampling second
+        frame_rate = args.Sampling  # it will capture image in each sampling second
         videocap.set(cv2.CAP_PROP_POS_MSEC, sec * 1000)
-        hasFrames, image = videocap.read()
+        has_frames, image = videocap.read()
         # Create the folder if it doesn't exist
-        os.makedirs(args.Output_path+ "/Output/", exist_ok=True)
+        os.makedirs(args.Output_path + "/Output/", exist_ok=True)
 
-        while hasFrames:
+        while has_frames:
             count = count + 1
-            sec = sec + frameRate
+            sec = sec + frame_rate
             sec = round(sec, 2)
             videocap.set(cv2.CAP_PROP_POS_MSEC, sec * 1000)
-            hasFrames, image = videocap.read()
+            has_frames, image = videocap.read()
             print(args.Output_path + "Output/" + "image" + str(count) + ".jpg")
-            if hasFrames:
+            if has_frames:
                 cv2.imwrite(args.Output_path + "/Output/" + "image" + str(count) + ".jpg",
                             image)  # save frame as JPG file
 
         # return the new frames collection id
         return "frames collection id! " + str(args.Video_path)
-
